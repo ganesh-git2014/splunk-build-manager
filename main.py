@@ -3,7 +3,12 @@
 @contact: cuyu@splunk.com
 @since: 6/14/16
 '''
-from logging_base import setup_logger
+from manage import BuildManager
+
+def main():
+    manager = BuildManager('/root/splunk_builds')
+    manager.download_latest_builds()
+    manager.delete_expire_builds()
 
 if __name__ == '__main__':
-    setup_logger()
+    main()

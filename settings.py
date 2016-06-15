@@ -2,7 +2,7 @@
 MAX_DOWNLOAD_TRY = 5
 
 # Max number of concurrent threads when downloading builds.
-MAX_CONCURRENT_THREADS = 20
+MAX_CONCURRENT_THREADS = 10
 
 # The platforms of the downloaded builds.
 # Refer to the build fetcher from http://releases.splunk.com/

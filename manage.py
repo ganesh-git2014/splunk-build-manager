@@ -7,11 +7,12 @@ import os
 
 import re
 import requests
+import time
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from download import BuildDownloader
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH
+from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH, EXPIRE_DAYS
 
 
 class BuildManager(Logging):
@@ -50,21 +51,38 @@ class BuildManager(Logging):
                 filtered_branches.append(branch)
         return filtered_branches
 
-    def download_builds(self):
+    def download_latest_builds(self):
         results = dict()
         thread_pool = ThreadPool(processes=MAX_CONCURRENT_THREADS)
         for branch in self.branch_list:
             for platform_pkg in PLATFORM_PACKAGES:
                 downloader = BuildDownloader(os.path.join(self.root_path, branch), platform_pkg, branch=branch)
-                results[branch] = thread_pool.apply_async(downloader.start)
+                results[branch] = thread_pool.apply_async(downloader.start_download)
 
         for branch in self.branch_list:
             print results[branch].get()
 
-    def delete_builds(self):
-        pass
+    def delete_expire_builds(self):
+        expire_time = time.time()
+        delete_files = []
+        for root, dirs, files in os.walk(self.root_path):
+            create_times = dict()
+            for f in files:
+                if not f.startswith('.'):
+                    file_path = os.path.join(root, f)
+                    create_times[os.path.getctime(file_path)] = file_path
+            sorted_times = sorted(create_times.keys())
+            # Will delete the package if it is expired and not the only one file in that folder.
+            for ct in sorted_times[:-1]:
+                if ct < expire_time:
+                    delete_files.append(create_times[ct])
+
+        for file_path in delete_files:
+            os.remove(file_path)
+            self.logger.info('{0} is deleted due to expiration.'.format(file_path))
 
 
 if __name__ == '__main__':
     manager = BuildManager('/tmp/builds/')
-    manager.download_builds()
+    manager.download_latest_builds()
+    manager.delete_expire_builds()

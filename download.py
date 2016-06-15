@@ -35,6 +35,9 @@ class BuildDownloader(Logging):
         url = self._get_url_from_splunk_build_fetcher()
         file_name = url.split('/')[-1]
         file_path = os.path.join(self.dir_path, file_name)
+        # Return if already downloaded.
+        if os.path.isfile(file_path):
+            return True
         # Make dir folder if not exist.
         if not os.path.isdir(self.dir_path):
             os.makedirs(self.dir_path)
@@ -120,7 +123,7 @@ class BuildDownloader(Logging):
                 m.update(buf)
         return m.hexdigest() == check_sum
 
-    def start(self):
+    def start_download(self):
         count = 0
         while not self.download_package():
             count += 1
@@ -131,5 +134,5 @@ class BuildDownloader(Logging):
 
 
 if __name__ == '__main__':
-    downloader = BuildDownloader('/tmp', 'x64-release.msi')
-    downloader.start()
+    downloader = BuildDownloader('/tmp/builds', 'x64-release.msi')
+    downloader.start_download()
