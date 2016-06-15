@@ -5,12 +5,13 @@
 '''
 import os
 
+import re
 import requests
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from download import BuildDownloader
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES
+from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH
 
 
 class BuildManager(Logging):
@@ -33,7 +34,21 @@ class BuildManager(Logging):
             if tag.string:
                 if tag.string.startswith('Branch: '):
                     branch_list.append(tag.string.replace('Branch: ', ''))
-        return branch_list
+        return self._filter_branches(branch_list)
+
+    def _filter_branches(self, branch_list):
+        filtered_branches = []
+        for branch in branch_list:
+            for pattern in FILTER_BRANCH_REGEX:
+                if re.match(pattern, branch):
+                    break
+            else:
+                filtered_branches.append(branch)
+
+        for branch in MUST_DOWNLOAD_BRANCH:
+            if not branch in filtered_branches:
+                filtered_branches.append(branch)
+        return filtered_branches
 
     def download_builds(self):
         results = dict()
