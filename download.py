@@ -4,17 +4,15 @@
 @since: 6/14/16
 '''
 import os
-import threading
 import requests
 import hashlib
 from helmut.splunk_package import NightlyPackage
+from settings import MAX_DOWNLOAD_TRY
 
 from logging_base import Logging
 
-_MAX_TRY = 5
 
-
-class DownloadThread(Logging, threading.Thread):
+class BuildDownloader(Logging):
     def __init__(self, dir_path, branch=None, build=None, package_type=None):
         """
         :param file_path: The target download directory.
@@ -22,7 +20,7 @@ class DownloadThread(Logging, threading.Thread):
         :param build: default is latest build.
         :param package_type: default is splunk.
         """
-        super(DownloadThread, self).__init__()
+        super(BuildDownloader, self).__init__()
         self.branch = branch
         self.build = build
         self.package_type = package_type
@@ -37,6 +35,9 @@ class DownloadThread(Logging, threading.Thread):
         url = pkg.get_url()
         file_name = url.split('/')[-1]
         file_path = os.path.join(self.dir_path, file_name)
+        # Make dir folder if not exist.
+        if not os.path.isdir(self.dir_path):
+            os.makedirs(self.dir_path)
         with open(file_path, mode='w') as f:
             self.download_from_url(url, f)
         check_sum = self.get_md5(url)
@@ -68,17 +69,16 @@ class DownloadThread(Logging, threading.Thread):
                 m.update(buf)
         return m.hexdigest() == check_sum
 
-    def run(self):
+    def start(self):
         count = 0
         while not self.download_package():
             count += 1
             self.logger.warning('Download package failed {0} times, try again...'.format(count))
-            if count > _MAX_TRY:
+            if count > MAX_DOWNLOAD_TRY:
                 self.logger.error('Download package failed, just give up.')
                 break
 
 
 if __name__ == '__main__':
-    t = DownloadThread('/tmp')
-    t.start()
-    t.join()
+    downloader = BuildDownloader('/tmp')
+    downloader.start()
