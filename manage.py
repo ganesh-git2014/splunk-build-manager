@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from download import BuildDownloader
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS
+from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES
 
 
 class BuildManager(Logging):
@@ -39,13 +39,17 @@ class BuildManager(Logging):
         results = dict()
         thread_pool = ThreadPool(processes=MAX_CONCURRENT_THREADS)
         for branch in self.branch_list:
-            downloader = BuildDownloader(os.path.join(self.root_path, branch), branch=branch)
-            results[branch] = thread_pool.apply_async(downloader.start)
+            for platform_pkg in PLATFORM_PACKAGES:
+                downloader = BuildDownloader(os.path.join(self.root_path, branch), platform_pkg, branch=branch)
+                results[branch] = thread_pool.apply_async(downloader.start)
 
         for branch in self.branch_list:
             print results[branch].get()
 
+    def delete_builds(self):
+        pass
+
 
 if __name__ == '__main__':
-    manager = BuildManager('/tmp')
+    manager = BuildManager('/tmp/builds/')
     manager.download_builds()

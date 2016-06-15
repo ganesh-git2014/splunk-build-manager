@@ -60,3 +60,6 @@ class Logging(object):
         @return: The associated logger.
         '''
         return self._logger
+
+
+setup_logger()
