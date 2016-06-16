@@ -60,10 +60,12 @@ class BuildManager(Logging):
                 results[branch] = thread_pool.apply_async(downloader.start_download)
 
         for branch in self.branch_list:
-            print results[branch].get()
+            result = results[branch].get()
+            if result:
+                self.logger.error(result)
 
     def delete_expire_builds(self):
-        expire_time = time.time() - EXPIRE_DAYS * 3600 *24
+        expire_time = time.time() - EXPIRE_DAYS * 3600 * 24
         delete_files = []
         for root, dirs, files in os.walk(self.root_path):
             create_times = dict()
