@@ -15,7 +15,7 @@ def main():
     pool = ThreadPool(processes=1)
     lc = LoopingCall(manage_build)
     pool.apply_async(lc.start, (3600 * 2,))
-    resource = File('/tmp')
+    resource = File('/root/splunk_builds')
     factory = Site(resource)
     reactor.listenTCP(8080, factory)
     reactor.run()

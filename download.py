@@ -41,7 +41,8 @@ class BuildDownloader(Logging):
         # Make dir folder if not exist.
         if not os.path.isdir(self.dir_path):
             os.makedirs(self.dir_path)
-        with open(file_path, mode='w') as f:
+        # Must open the destination file in binary mode to ensure python doesn't try and translate newlines for you.
+        with open(file_path, mode='wb') as f:
             self.download_from_url(url, f)
         check_sum = self.get_md5(url)
         if self.check_md5(file_path, check_sum):
