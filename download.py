@@ -44,7 +44,11 @@ class BuildDownloader(Logging):
         with open(file_path, mode='w') as f:
             self.download_from_url(url, f)
         check_sum = self.get_md5(url)
-        return self.check_md5(file_path, check_sum)
+        if self.check_md5(file_path, check_sum):
+            return True
+        else:
+            os.remove(file_path)
+            return False
 
     def _get_url_from_splunk_build_fetcher(self):
         '''
@@ -102,7 +106,7 @@ class BuildDownloader(Logging):
         response = requests.get(url, stream=True)
         assert response.status_code == 200
         self.logger.info('Start downloading from {0}'.format(url))
-        for chunk in response.iter_content(chunk_size=16 * 1024):
+        for chunk in response.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
                 file_object.write(chunk)
                 file_object.flush()
