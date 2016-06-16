@@ -63,7 +63,7 @@ class BuildManager(Logging):
             print results[branch].get()
 
     def delete_expire_builds(self):
-        expire_time = time.time()
+        expire_time = time.time() - EXPIRE_DAYS * 3600 *24
         delete_files = []
         for root, dirs, files in os.walk(self.root_path):
             create_times = dict()
@@ -84,5 +84,5 @@ class BuildManager(Logging):
 
 if __name__ == '__main__':
     manager = BuildManager('/tmp/builds/')
-    manager.download_latest_builds()
+    # manager.download_latest_builds()
     manager.delete_expire_builds()

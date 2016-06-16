@@ -84,7 +84,7 @@ class BuildDownloader(Logging):
         if self.build != 'latest':
             url += '&' + cTag + str(self.build)
 
-        self.logger.info("Get url from splunk build fetcher: %s" % url)
+        self.logger.debug("Get url from splunk build fetcher: %s" % url)
 
         for i in range(12):
             try:
@@ -101,10 +101,12 @@ class BuildDownloader(Logging):
         # NOTE the stream=True parameter
         response = requests.get(url, stream=True)
         assert response.status_code == 200
+        self.logger.info('Start downloading from {0}'.format(url))
         for chunk in response.iter_content(chunk_size=16 * 1024):
             if chunk:  # filter out keep-alive new chunks
                 file_object.write(chunk)
-                # os.fsync(file_object.fileno())  # make sure all internal buffers are written to disk
+                file_object.flush()
+                os.fsync(file_object.fileno())  # make sure all internal buffers are written to disk
         return True
 
     def get_md5(self, url):
@@ -125,14 +127,18 @@ class BuildDownloader(Logging):
 
     def start_download(self):
         count = 0
-        while not self.download_package():
+        package_info = str((self.package_type, self.branch, self.build, self.platform_package))
+        while True:
+            if self.download_package():
+                self.logger.info('Download package {0} successfully.'.format(package_info))
+                break
             count += 1
-            self.logger.warning('Download package failed {0} times, try again...'.format(count))
+            self.logger.warning('Download package {0} failed {1} times, try again...'.format(package_info, count))
             if count > MAX_DOWNLOAD_TRY:
-                self.logger.error('Download package failed, just give up.')
+                self.logger.error('Download package {0} failed, just give up.'.format(package_info))
                 break
 
 
 if __name__ == '__main__':
-    downloader = BuildDownloader('/tmp/builds', 'x64-release.msi')
+    downloader = BuildDownloader('/tmp/builds/current/', 'x64-release.msi')
     downloader.start_download()
