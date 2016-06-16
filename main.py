@@ -3,6 +3,7 @@
 @contact: cuyu@splunk.com
 @since: 6/14/16
 '''
+from multiprocessing.pool import ThreadPool
 from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.internet import reactor
@@ -11,8 +12,9 @@ from manage import BuildManager
 
 
 def main():
+    pool = ThreadPool(processes=1)
     lc = LoopingCall(manage_build)
-    lc.start(3600 * 2)
+    pool.apply_async(lc.start, (3600 * 2,))
     resource = File('/tmp')
     factory = Site(resource)
     reactor.listenTCP(8080, factory)
