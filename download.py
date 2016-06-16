@@ -7,9 +7,13 @@ import os
 import requests
 import hashlib
 import time
+from requests.adapters import HTTPAdapter
 from settings import MAX_DOWNLOAD_TRY
-
 from logging_base import Logging
+from settings import MAX_CONCURRENT_THREADS
+
+_SESSION = requests.session()
+_SESSION.mount('http', HTTPAdapter(pool_maxsize=MAX_CONCURRENT_THREADS))
 
 
 class BuildDownloader(Logging):
@@ -104,7 +108,7 @@ class BuildDownloader(Logging):
 
     def download_from_url(self, url, file_object):
         # NOTE the stream=True parameter
-        response = requests.get(url, stream=True)
+        response = _SESSION.get(url, stream=True)
         assert response.status_code == 200
         self.logger.info('Start downloading from {0}'.format(url))
         for chunk in response.iter_content(chunk_size=1024):

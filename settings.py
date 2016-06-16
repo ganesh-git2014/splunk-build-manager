@@ -1,3 +1,6 @@
+# Will download builds under this directory.
+ROOT_DIR = '/root/splunk_builds'
+
 # Max try number of downloading builds if not successful.
 MAX_DOWNLOAD_TRY = 5
 
