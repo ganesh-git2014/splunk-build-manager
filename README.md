@@ -22,6 +22,10 @@ Just go to the project's root directory and type:
 ./splunkbmd start
 ```
 
+Then the web server will be opened on http://your_server_hostname:8080 (the port number can be modified in `settings.py`) and will fetch splunk packages every two hours (by default).
+
+---
+
 To stop[^1] the service, type:
 
 ```shell
@@ -37,4 +41,4 @@ Just see `settings.py`.
 ## Todo
 
 - ~~Should not expose the file in downloading process on the web server~~
-- Make download more stable (why so many incomplete downloaded packages?)
+- ~~Make download more stable~~ (It seems open too many download threads (connections) will make it unstable)

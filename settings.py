@@ -35,3 +35,9 @@ RECORD_DOWNLOAD_SPEED = True
 
 # The interval (seconds) between two records of download speed.
 RECORD_DOWNLOAD_INTERVAL = 30
+
+# The interval (hours) between two download processes start.
+FETCH_INTERVAL = 2
+
+# The port of the twisted web server.
+WEB_SERVER_PORT = 8080
