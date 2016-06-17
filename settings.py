@@ -10,7 +10,8 @@ MAX_CONCURRENT_THREADS = 5
 # The platforms of the downloaded builds.
 # Refer to the build fetcher from http://releases.splunk.com/
 PLATFORM_PACKAGES = ['Linux-x86_64.tgz',
-                     'x64-release.msi']
+                     'x64-release.msi',
+                     'darwin-64.tgz']
 
 # Branch name in the following will must be downloaded even if it matches the FILTER_BRANCH_REGEX.
 MUST_DOWNLOAD_BRANCH = []
