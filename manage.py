@@ -53,17 +53,17 @@ class BuildManager(Logging):
 
     def download_latest_builds(self):
         self.logger.info('Start downloading latest builds of these branch: {0}'.format(str(self.branch_list)))
-        results = dict()
+        results = []
         thread_pool = ThreadPool(processes=MAX_CONCURRENT_THREADS)
         for branch in self.branch_list:
             for platform_pkg in PLATFORM_PACKAGES:
                 downloader = BuildDownloader(os.path.join(self.root_path, branch), platform_pkg, branch=branch)
-                results[branch] = thread_pool.apply_async(downloader.start_download)
+                results.append(thread_pool.apply_async(downloader.start_download))
 
-        for branch in self.branch_list:
-            result = results[branch].get()
-            if result:
-                self.logger.error(result)
+        for result in results:
+            msg = result.get()
+            if msg:
+                self.logger.error(msg)
         self.logger.info('All download threads end.')
 
     def delete_expire_builds(self):
