@@ -148,7 +148,7 @@ class BuildDownloader(Logging):
     def get_md5(self, url):
         md5_url = url + '.md5'
         response = requests.get(md5_url)
-        return response.content.split(' ')[-1]
+        return response.content.split(' ')[-1].rstrip()
 
     def check_md5(self, file_path, check_sum):
         m = hashlib.md5()
@@ -172,9 +172,9 @@ class BuildDownloader(Logging):
                 self.logger.error('Download package failed, just give up.')
                 break
             else:
-                self.logger.warning('Download package failed {1} times, try again...'.format(count))
+                self.logger.warning('Download package failed {0} times, try again...'.format(count))
 
 
 if __name__ == '__main__':
-    downloader = BuildDownloader('/tmp/builds/current/', 'x64-release.msi')
+    downloader = BuildDownloader('/tmp/builds/ace/', 'x64-release.msi', branch='ace')
     downloader.start_download()
