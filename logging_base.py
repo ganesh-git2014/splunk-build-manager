@@ -62,4 +62,4 @@ class Logging(object):
         return self._logger
 
 
-setup_logger()
+setup_logger(True)

@@ -39,6 +39,7 @@ class BuildDownloader(Logging):
         url = self._get_url_from_splunk_build_fetcher()
         file_name = url.split('/')[-1]
         file_path = os.path.join(self.dir_path, file_name)
+        tmp_path = os.path.join('/tmp', file_name)
         # Return if already downloaded.
         if os.path.isfile(file_path):
             return True
@@ -46,13 +47,18 @@ class BuildDownloader(Logging):
         if not os.path.isdir(self.dir_path):
             os.makedirs(self.dir_path)
         # Must open the destination file in binary mode to ensure python doesn't try and translate newlines for you.
-        with open(file_path, mode='wb') as f:
-            self.download_from_url(url, f)
+        with open(tmp_path, mode='wb') as f:
+            try:
+                self.download_from_url(url, f)
+            except:
+                os.remove(tmp_path)
+                return False
         check_sum = self.get_md5(url)
-        if self.check_md5(file_path, check_sum):
+        if self.check_md5(tmp_path, check_sum):
+            os.rename(tmp_path, file_path)
             return True
         else:
-            os.remove(file_path)
+            os.remove(tmp_path)
             return False
 
     def _get_url_from_splunk_build_fetcher(self):
