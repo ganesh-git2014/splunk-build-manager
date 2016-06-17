@@ -5,7 +5,7 @@ ROOT_DIR = '/root/splunk_builds'
 MAX_DOWNLOAD_TRY = 5
 
 # Max number of concurrent threads when downloading builds.
-MAX_CONCURRENT_THREADS = 10
+MAX_CONCURRENT_THREADS = 5
 
 # The platforms of the downloaded builds.
 # Refer to the build fetcher from http://releases.splunk.com/
@@ -28,3 +28,6 @@ FILTER_BRANCH_REGEX = ['.*-.*',
 
 # The package downloaded before these days will be deleted unless it is the only one in that folder.
 EXPIRE_DAYS = 3
+
+# If True, will check and record download speed in the logs, this could affect the effectiveness of the program.
+RECORD_DOWNLOAD_SPEED = True

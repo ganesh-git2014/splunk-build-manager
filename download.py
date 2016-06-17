@@ -10,10 +10,10 @@ import time
 from requests.adapters import HTTPAdapter
 from settings import MAX_DOWNLOAD_TRY
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS
+from settings import MAX_CONCURRENT_THREADS, RECORD_DOWNLOAD_SPEED
 
 _SESSION = requests.session()
-_SESSION.mount('http', HTTPAdapter(pool_maxsize=MAX_CONCURRENT_THREADS))
+_SESSION.mount('http', HTTPAdapter(pool_maxsize=2 * MAX_CONCURRENT_THREADS))
 
 
 class BuildDownloader(Logging):
@@ -24,12 +24,19 @@ class BuildDownloader(Logging):
         :param build: default is latest build.
         :param package_type: default is splunk.
         """
-        super(BuildDownloader, self).__init__()
         self.platform_package = platform_package
         self.branch = branch if branch else 'current'
         self.build = build if build else 'latest'
         self.package_type = package_type if package_type else 'splunk'
         self.dir_path = dir_path
+        self._downloaded_size = 0
+        self._record_time = 0
+        super(BuildDownloader, self).__init__()
+
+    @property
+    def _logger_name(self):
+        return self.__class__.__name__ + '({0}-{1}-{2}-{3})'.format(self.package_type, self.branch, self.build,
+                                                                    self.platform_package)
 
     def download_package(self):
         """
@@ -117,12 +124,24 @@ class BuildDownloader(Logging):
         response = _SESSION.get(url, stream=True)
         assert response.status_code == 200
         self.logger.info('Start downloading from {0}'.format(url))
-        for chunk in response.iter_content(chunk_size=1024):
+        chunk_size = 1024
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if RECORD_DOWNLOAD_SPEED:
+                self.record_download_speed(chunk_size, 10)
             if chunk:  # filter out keep-alive new chunks
                 file_object.write(chunk)
                 file_object.flush()
                 os.fsync(file_object.fileno())  # make sure all internal buffers are written to disk
         return True
+
+    def record_download_speed(self, chunk_size, interval):
+        now = time.time()
+        if self._record_time < now:
+            self.logger.info('Downloading {0}kb/s'.format(self._downloaded_size / 1024 / interval))
+            self._record_time = now + interval
+            self._downloaded_size = 0
+        else:
+            self._downloaded_size += chunk_size
 
     def get_md5(self, url):
         md5_url = url + '.md5'
@@ -142,15 +161,14 @@ class BuildDownloader(Logging):
 
     def start_download(self):
         count = 0
-        package_info = str((self.package_type, self.branch, self.build, self.platform_package))
         while True:
             if self.download_package():
-                self.logger.info('Download package {0} successfully.'.format(package_info))
+                self.logger.info('Download package successfully.')
                 break
             count += 1
-            self.logger.warning('Download package {0} failed {1} times, try again...'.format(package_info, count))
+            self.logger.warning('Download package failed {1} times, try again...'.format(count))
             if count > MAX_DOWNLOAD_TRY:
-                self.logger.error('Download package {0} failed, just give up.'.format(package_info))
+                self.logger.error('Download package failed, just give up.')
                 break
 
 
