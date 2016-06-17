@@ -31,3 +31,6 @@ EXPIRE_DAYS = 3
 
 # If True, will check and record download speed in the logs, this could affect the effectiveness of the program.
 RECORD_DOWNLOAD_SPEED = True
+
+# The interval (seconds) between two records of download speed.
+RECORD_DOWNLOAD_INTERVAL = 30

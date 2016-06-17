@@ -63,6 +63,7 @@ class BuildManager(Logging):
             result = results[branch].get()
             if result:
                 self.logger.error(result)
+        self.logger.info('All download threads end.')
 
     def delete_expire_builds(self):
         expire_time = time.time() - EXPIRE_DAYS * 3600 * 24
@@ -71,13 +72,17 @@ class BuildManager(Logging):
             create_times = dict()
             for f in files:
                 if not f.startswith('.'):
+                    platform_pkg = '-'.join(f.split('-')[3:])
+                    if not platform_pkg in create_times:
+                        create_times[platform_pkg] = dict()
                     file_path = os.path.join(root, f)
-                    create_times[os.path.getctime(file_path)] = file_path
-            sorted_times = sorted(create_times.keys())
-            # Will delete the package if it is expired and not the only one file in that folder.
-            for ct in sorted_times[:-1]:
-                if ct < expire_time:
-                    delete_files.append(create_times[ct])
+                    create_times[platform_pkg][os.path.getctime(file_path)] = file_path
+            for platform_pkg in create_times.keys():
+                sorted_times = sorted(create_times[platform_pkg].keys())
+                # Will delete the package if it is expired and not the only one file (of that platform) in that folder.
+                for ct in sorted_times[:-1]:
+                    if ct < expire_time:
+                        delete_files.append(create_times[ct])
 
         for file_path in delete_files:
             os.remove(file_path)

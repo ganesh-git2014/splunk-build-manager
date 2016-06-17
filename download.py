@@ -10,7 +10,7 @@ import time
 from requests.adapters import HTTPAdapter
 from settings import MAX_DOWNLOAD_TRY
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS, RECORD_DOWNLOAD_SPEED
+from settings import MAX_CONCURRENT_THREADS, RECORD_DOWNLOAD_SPEED, RECORD_DOWNLOAD_INTERVAL
 
 _SESSION = requests.session()
 _SESSION.mount('http', HTTPAdapter(pool_maxsize=2 * MAX_CONCURRENT_THREADS))
@@ -127,18 +127,18 @@ class BuildDownloader(Logging):
         chunk_size = 1024
         for chunk in response.iter_content(chunk_size=chunk_size):
             if RECORD_DOWNLOAD_SPEED:
-                self.record_download_speed(chunk_size, 10)
+                self.record_download_speed(chunk_size)
             if chunk:  # filter out keep-alive new chunks
                 file_object.write(chunk)
                 file_object.flush()
                 os.fsync(file_object.fileno())  # make sure all internal buffers are written to disk
         return True
 
-    def record_download_speed(self, chunk_size, interval):
+    def record_download_speed(self, chunk_size):
         now = time.time()
         if self._record_time < now:
-            self.logger.info('Downloading {0}kb/s'.format(self._downloaded_size / 1024 / interval))
-            self._record_time = now + interval
+            self.logger.info('Downloading {0}kb/s'.format(self._downloaded_size / 1024 / RECORD_DOWNLOAD_INTERVAL))
+            self._record_time = now + RECORD_DOWNLOAD_INTERVAL
             self._downloaded_size = 0
         else:
             self._downloaded_size += chunk_size
@@ -150,10 +150,10 @@ class BuildDownloader(Logging):
 
     def check_md5(self, file_path, check_sum):
         m = hashlib.md5()
-        blocksize = 2 ** 20
+        block_size = 2 ** 20
         with open(file_path, "rb") as f:
             while True:
-                buf = f.read(blocksize)
+                buf = f.read(block_size)
                 if not buf:
                     break
                 m.update(buf)
