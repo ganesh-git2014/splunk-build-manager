@@ -12,13 +12,23 @@ This program is meant to download and manage the builds of splunk. It will imple
 
 These python libs are needed:  `requests`, `beautifulSoup4`, `twisted`
 
+(Please make sure these libs are installed on the default python of the environment variables.)
+
 ### Deploy
 
 Just go to the project's root directory and type:
 
 ```shell
-python main.py
+./splunkbmd start
 ```
+
+To stop[^1] the service, type:
+
+```shell
+./splunkbmd stop
+```
+
+[^1]: This will simply kill the process.
 
 ### Settings
 
@@ -28,4 +38,3 @@ Just see `settings.py`.
 
 - ~~Should not expose the file in downloading process on the web server~~
 - Make download more stable (why so many incomplete downloaded packages?)
-
