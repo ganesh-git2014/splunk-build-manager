@@ -49,6 +49,7 @@ class BuildDownloader(Logging):
         tmp_path = os.path.join('/tmp', file_name)
         # Return if already downloaded.
         if os.path.isfile(file_path):
+            self.logger.info('File exists already, skip downloading.')
             return True
         # Make dir folder if not exist.
         if not os.path.isdir(self.dir_path):
@@ -57,7 +58,8 @@ class BuildDownloader(Logging):
         with open(tmp_path, mode='wb') as f:
             try:
                 self.download_from_url(url, f)
-            except:
+            except Exception, e:
+                self.logger.error('Exception during download: {0}'.format(e.message))
                 os.remove(tmp_path)
                 return False
         check_sum = self.get_md5(url)
@@ -166,10 +168,11 @@ class BuildDownloader(Logging):
                 self.logger.info('Download package successfully.')
                 break
             count += 1
-            self.logger.warning('Download package failed {1} times, try again...'.format(count))
             if count > MAX_DOWNLOAD_TRY:
                 self.logger.error('Download package failed, just give up.')
                 break
+            else:
+                self.logger.warning('Download package failed {1} times, try again...'.format(count))
 
 
 if __name__ == '__main__':

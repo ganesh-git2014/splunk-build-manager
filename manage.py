@@ -52,6 +52,7 @@ class BuildManager(Logging):
         return filtered_branches
 
     def download_latest_builds(self):
+        self.logger.info('Start downloading latest builds of these branch: {0}'.format(str(self.branch_list)))
         results = dict()
         thread_pool = ThreadPool(processes=MAX_CONCURRENT_THREADS)
         for branch in self.branch_list:
