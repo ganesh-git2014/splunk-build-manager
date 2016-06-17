@@ -148,7 +148,9 @@ class BuildDownloader(Logging):
     def get_md5(self, url):
         md5_url = url + '.md5'
         response = requests.get(md5_url)
-        return response.content.split(' ')[-1].rstrip()
+        check_sum = response.content.split(' ')[-1].rstrip()
+        self.logger.debug('Get md5 check sum [{0}] from url.'.format(check_sum))
+        return check_sum
 
     def check_md5(self, file_path, check_sum):
         m = hashlib.md5()
@@ -159,7 +161,12 @@ class BuildDownloader(Logging):
                 if not buf:
                     break
                 m.update(buf)
-        return m.hexdigest() == check_sum
+        file_check_sum = m.hexdigest()
+        if file_check_sum != check_sum:
+            self.logger.warning(
+                'The expect check sum is {0} while the downloaded file\'s check sum is {1}.'.format(check_sum,
+                                                                                                    file_check_sum))
+        return file_check_sum == check_sum
 
     def start_download(self):
         count = 0
