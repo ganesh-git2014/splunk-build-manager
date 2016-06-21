@@ -12,12 +12,12 @@ from manage import BuildManager
 from settings import ROOT_DIR, FETCH_INTERVAL, WEB_SERVER_PORT
 
 _PID_FILE = 'splunkbmd.pid'
+_THREAD_POOL = ThreadPool(processes=1)
 
 
 def main():
-    pool = ThreadPool(processes=1)
     lc = LoopingCall(manage_build)
-    pool.apply_async(lc.start, (3600 * FETCH_INTERVAL,))
+    lc.start(3600 * FETCH_INTERVAL)
     resource = File(ROOT_DIR)
     factory = Site(resource)
     reactor.listenTCP(WEB_SERVER_PORT, factory)
@@ -25,6 +25,10 @@ def main():
 
 
 def manage_build():
+    _THREAD_POOL.apply_async(_wrap_manage_build)
+
+
+def _wrap_manage_build():
     manager = BuildManager(ROOT_DIR)
     manager.download_latest_builds()
     manager.delete_expire_builds()
