@@ -4,7 +4,7 @@
 @since: 6/15/16
 '''
 import os
-
+import operator
 import re
 import requests
 import time
@@ -77,13 +77,13 @@ class BuildManager(Logging):
                     if not platform_pkg in create_times:
                         create_times[platform_pkg] = dict()
                     file_path = os.path.join(root, f)
-                    create_times[platform_pkg][os.path.getctime(file_path)] = file_path
+                    create_times[platform_pkg][file_path] = os.path.getctime(file_path)
             for platform_pkg in create_times.keys():
-                sorted_times = sorted(create_times[platform_pkg].keys())
+                sorted_pairs = sorted(create_times[platform_pkg].items(), key=operator.itemgetter(1))
                 # Will delete the package if it is expired and not the only one file (of that platform) in that folder.
-                for ct in sorted_times[:-1]:
+                for file_path, ct in sorted_pairs[:-1]:
                     if ct < expire_time:
-                        delete_files.append(create_times[ct])
+                        delete_files.append(file_path)
 
         for file_path in delete_files:
             os.remove(file_path)

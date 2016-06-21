@@ -3,7 +3,6 @@
 
 import os, sys
 import signal
-from multiprocessing.pool import ThreadPool
 from threading import Thread
 from twisted.web.server import Site
 from twisted.web.static import File
