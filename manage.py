@@ -88,6 +88,8 @@ class BuildManager(Logging):
         for file_path in delete_files:
             os.remove(file_path)
             self.logger.info('{0} is deleted due to expiration.'.format(file_path))
+        
+        self.logger.info('All expired files are deleted.')
 
 
 if __name__ == '__main__':
