@@ -6,6 +6,7 @@
 import logging
 import os
 from abc import ABCMeta
+from logging.handlers import RotatingFileHandler
 
 _CURRENT_DIR = os.path.dirname(__file__)
 
@@ -23,7 +24,11 @@ def setup_logger(debug=False):
     level = logging.INFO
     if debug:
         level = logging.DEBUG
-    logging.basicConfig(filename=_FILE_NAME, filemode='w', level=level, format=_LOG_FORMAT)
+    hdlr = RotatingFileHandler(filename=_FILE_NAME, mode='w', maxBytes=500000, backupCount=2)
+    fmt = logging.Formatter(_LOG_FORMAT)
+    hdlr.setFormatter(fmt)
+    logging.root.addHandler(hdlr)
+    logging.root.setLevel(level)
     # Disable some unnecessary logs.
     logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
 
