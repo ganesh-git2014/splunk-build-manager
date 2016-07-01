@@ -12,7 +12,8 @@ from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from download import BuildDownloader
 from logging_base import Logging
-from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH, EXPIRE_DAYS
+from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH, EXPIRE_DAYS, \
+    NEVER_DELETE_BRANCH
 
 
 class BuildManager(Logging):
@@ -67,9 +68,12 @@ class BuildManager(Logging):
         self.logger.info('All download threads end.')
 
     def delete_expire_builds(self):
+        never_delete_folders = [os.path.join(self.root_path, branch) for branch in NEVER_DELETE_BRANCH]
         expire_time = time.time() - EXPIRE_DAYS * 3600 * 24
         delete_files = []
         for root, dirs, files in os.walk(self.root_path):
+            if root in never_delete_folders:
+                continue
             create_times = dict()
             for f in files:
                 if not f.startswith('.'):
@@ -88,11 +92,11 @@ class BuildManager(Logging):
         for file_path in delete_files:
             os.remove(file_path)
             self.logger.info('{0} is deleted due to expiration.'.format(file_path))
-        
+
         self.logger.info('All expired files are deleted.')
 
 
 if __name__ == '__main__':
-    manager = BuildManager('/tmp/builds/')
+    manager = BuildManager('/tmp/splunk_builds/')
     # manager.download_latest_builds()
     manager.delete_expire_builds()

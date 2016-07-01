@@ -41,3 +41,6 @@ FETCH_INTERVAL = 2
 
 # The port of the twisted web server.
 WEB_SERVER_PORT = 8080
+
+# Packages in this folder will never be deleted due to expiration.
+NEVER_DELETE_BRANCH = ['manual-build']
