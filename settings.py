@@ -25,7 +25,7 @@ FILTER_BRANCH_REGEX = ['.*-.*',
                        'jsdoc',
                        'hunk',
                        'jsdoc',
-                       '6.2.10']
+                       '\d+\.']
 
 # The package downloaded before these days will be deleted unless it is the only one in that folder.
 EXPIRE_DAYS = 3
