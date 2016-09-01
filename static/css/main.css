@@ -1,0 +1,9 @@
+h1[class*="text-muted"] {
+    padding: 0.1em;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+table thead tr th:hover {
+    background-color: #f9f9f9;
+}

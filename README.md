@@ -6,19 +6,25 @@ This program is meant to download and manage the builds of splunk. It will imple
 - Delete the builds which are out of date (e.g. the builds downloaded 7 days ago)
 - Maintain the specific builds forever (used for checking regression bugs)
 
+The web server uses [twisted](https://twistedmatrix.com), enhanced by [twisted-customise-file-server](https://github.com/cuyu/twisted-customise-file-server).
+
 ## User Guide
 
 ### Prerequisites
 
-These python libs are needed:  `requests`, `beautifulSoup4`, `twisted`
+These python libs are needed:  `requests`, `beautifulSoup4`, `twisted`, `Jinja2`
 
-(Please make sure these libs are installed on the default python of the environment variables.)
+Install them by:
+
+```bash
+pip install -r requirements.txt 
+```
 
 ### Deploy
 
 Just go to the project's root directory and type:
 
-```shell
+```bash
 ./splunkbmd start
 ```
 
