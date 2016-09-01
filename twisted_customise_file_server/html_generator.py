@@ -30,4 +30,4 @@ class HtmlGenerator(object):
         :return: A unicode string of rendered html content.
         """
         template = self.env.get_template(TEMPLATE_FILE)
-        return template.render(**variables)
+        return template.render(url_for=url_for, **variables)
