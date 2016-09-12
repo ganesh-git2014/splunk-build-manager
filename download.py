@@ -65,7 +65,7 @@ class BuildDownloader(Logging):
         check_sum = self.get_md5(url)
         if self.check_md5(tmp_path, check_sum):
             os.rename(tmp_path, file_path)
-            self.logger.info('Download package successfully.')
+            self.logger.info('{0} ==> Download package successfully.'.format(file_name))
             return True
         else:
             os.remove(tmp_path)

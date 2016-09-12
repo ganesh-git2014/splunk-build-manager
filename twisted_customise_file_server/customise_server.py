@@ -25,7 +25,7 @@ def hackGetResourceFor(self, request):
     Hack the getResourceFor function to log the site visit info.
     """
     request.site = self
-    if not request.uri.endswith('/'):
+    if (not request.uri.statswith('/static')) and (not request.uri.endswith('/')):
         _LOGGER.info('Request for uri: {0} from {1}'.format(request.uri, request.client.host))
     request.sitepath = copy.copy(request.prepath)
     return resource.getChildForRequest(self.resource, request)
