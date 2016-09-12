@@ -67,4 +67,8 @@ class Logging(object):
         return self._logger
 
 
+def get_logger(name):
+    return logging.getLogger(name)
+
+
 setup_logger()

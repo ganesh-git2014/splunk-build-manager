@@ -5,13 +5,33 @@
 @contact: cuyu@splunk.com
 @since: 9/1/16
 """
+import copy
 import os
 
 from twisted.web import server
 from twisted.internet import reactor
 
 from customise_resource import CustomiseFile
+from logging_base import get_logger
 from settings import STATIC_RESOURCE_PATH
+from twisted.web import resource
+
+
+_LOGGER = get_logger('WebServer')
+
+
+def hackGetResourceFor(self, request):
+    """
+    Hack the getResourceFor function to log the site visit info.
+    """
+    request.site = self
+    if not request.uri.endswith('/'):
+        _LOGGER.info('Request for uri: {0} from {1}'.format(request.uri, request.client.host))
+    request.sitepath = copy.copy(request.prepath)
+    return resource.getChildForRequest(self.resource, request)
+
+
+server.Site.getResourceFor = hackGetResourceFor
 
 
 class CustomiseServer(object):
