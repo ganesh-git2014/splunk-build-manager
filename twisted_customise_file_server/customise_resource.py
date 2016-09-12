@@ -65,7 +65,6 @@ class CustomiseDirectoryLister(resource.Resource):
     <td><a href="%(href)s">%(text)s</a></td>
     <td data-value="%(size_int)s">%(size)s</td>
     <td>%(type)s</td>
-    <td>%(encoding)s</td>
     <td data-dateformat="YYYY-MM-DD hh:mm:ss">%(ctime)s</td>
 </tr>
 """
@@ -105,8 +104,7 @@ class CustomiseDirectoryLister(resource.Resource):
 
             if childPath.isdir():
                 dirs.append({'text': escapedPath + "/", 'href': url + "/", 'size_int': -1,
-                             'size': '', 'type': '[Directory]',
-                             'encoding': '', 'ctime': ''})
+                             'size': '', 'type': '[Directory]', 'ctime': ''})
             else:
                 mimetype, encoding = getTypeAndEncoding(path, self.contentTypes,
                                                         self.contentEncodings,
@@ -118,7 +116,6 @@ class CustomiseDirectoryLister(resource.Resource):
                 files.append({
                     'text': escapedPath, "href": url,
                     'type': '[%s]' % mimetype,
-                    'encoding': (encoding and '[%s]' % encoding or ''),
                     'size_int': size,
                     'size': formatFileSize(size),
                     'ctime': self.getCreateTime(childPath.path)})
