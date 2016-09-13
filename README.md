@@ -48,5 +48,5 @@ Just see `settings.py`.
 
 - ~~Should not expose the file in downloading process on the web server~~
 - ~~Make download more stable~~ (It seems open too many download threads (connections) will make it unstable)
-- Record the download stats in the log
+- ~~Record the download stats in the log~~
 - Add a search bar in the web page (search the build in the site, if not exist get the corresponding url from http://releases.splunk.com)
