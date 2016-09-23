@@ -13,7 +13,7 @@ from logging_base import Logging
 from settings import MAX_CONCURRENT_THREADS, RECORD_DOWNLOAD_SPEED, RECORD_DOWNLOAD_INTERVAL
 
 _SESSION = requests.session()
-_SESSION.mount('http', HTTPAdapter(pool_maxsize=2 * MAX_CONCURRENT_THREADS))
+_SESSION.mount('http', HTTPAdapter(pool_maxsize=2 * MAX_CONCURRENT_THREADS, pool_connections=MAX_CONCURRENT_THREADS))
 
 
 class BuildDownloader(Logging):
@@ -135,6 +135,7 @@ class BuildDownloader(Logging):
                 file_object.write(chunk)
                 file_object.flush()
                 os.fsync(file_object.fileno())  # make sure all internal buffers are written to disk
+        response.close()
         return True
 
     def record_download_speed(self, chunk_size):
@@ -183,5 +184,5 @@ class BuildDownloader(Logging):
 
 
 if __name__ == '__main__':
-    downloader = BuildDownloader('/tmp/builds/ace/', 'x64-release.msi', branch='ace')
+    downloader = BuildDownloader('/tmp/', 'x64-release.msi', branch='ivory')
     downloader.start_download()

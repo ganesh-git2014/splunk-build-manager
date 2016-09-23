@@ -46,3 +46,6 @@ WEB_SERVER_PORT = 8080
 
 # Packages in this folder will never be deleted due to expiration.
 NEVER_DELETE_BRANCH = ['manual-build']
+
+# If True, all RC builds of the satisfied branches will reserved forever.
+RESERVE_RC_BUILDS = True

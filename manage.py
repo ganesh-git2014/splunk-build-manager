@@ -13,7 +13,11 @@ from multiprocessing.pool import ThreadPool
 from download import BuildDownloader
 from logging_base import Logging
 from settings import MAX_CONCURRENT_THREADS, PLATFORM_PACKAGES, FILTER_BRANCH_REGEX, MUST_DOWNLOAD_BRANCH, EXPIRE_DAYS, \
-    NEVER_DELETE_BRANCH
+    NEVER_DELETE_BRANCH, RESERVE_RC_BUILDS
+
+_SESSION = requests.session()
+_BASE_URL = 'http://releases.splunk.com'
+_RELEASE_URL = 'http://releases.splunk.com/status.html'
 
 
 class BuildManager(Logging):
@@ -22,14 +26,20 @@ class BuildManager(Logging):
         :param root_path: The root dir path to save the downloaded builds.
         """
         super(BuildManager, self).__init__()
-        self.branch_list = self._get_branch_list()
         self.root_path = root_path
+        self._cache = dict()
+        self.branch_list = self._get_branch_list()
+        if RESERVE_RC_BUILDS:
+            self.rc_builds = self._get_rc_list()
+        else:
+            self.rc_builds = dict()
 
     def _get_branch_list(self):
         """
         Acquire the branch list of splunk from http://releases.splunk.com/.
         """
-        response = requests.get('http://releases.splunk.com/status.html')
+        response = _SESSION.get(_RELEASE_URL)
+        self._cache['release_page'] = response.content
         parsed_html = BeautifulSoup(response.content, 'html.parser')
         branch_list = []
         for tag in parsed_html.find_all('center'):
@@ -52,6 +62,29 @@ class BuildManager(Logging):
                 filtered_branches.append(branch)
         return filtered_branches
 
+    def _get_rc_list(self):
+        rc_builds = dict()
+        release_page = self._cache.get('release_page')
+        if not release_page:
+            release_page = _SESSION.get(_RELEASE_URL).content
+        parsed_html = BeautifulSoup(release_page, 'html.parser')
+        for tag in parsed_html.find_all('tr', {'bgcolor': '#54C944'}):
+            branch = tag.contents[0].text
+            if branch in self.branch_list:
+                link = tag.contents[1].find('a').attrs['href']
+                download_page = _SESSION.get(_BASE_URL + '/' + link).content
+                build_number = self._get_commit_number(download_page)
+                label = tag.contents[2].text
+                rc_builds[label] = (branch, build_number)
+        return rc_builds
+
+    def _get_commit_number(self, download_page):
+        parsed_html = BeautifulSoup(download_page, 'html.parser')
+        for tag in parsed_html.find_all('a'):
+            href = tag.attrs['href']
+            if href.endswith(PLATFORM_PACKAGES[0]):
+                return href[:-len(PLATFORM_PACKAGES[0])].split('-')[-2]
+
     def download_latest_builds(self):
         self.logger.info('Start downloading latest builds of these branch: {0}'.format(str(self.branch_list)))
         results = []
@@ -69,6 +102,7 @@ class BuildManager(Logging):
 
     def delete_expire_builds(self):
         never_delete_folders = [os.path.join(self.root_path, branch) for branch in NEVER_DELETE_BRANCH]
+        rc_builds = [rc[1] for rc in self.rc_builds.values()]
         expire_time = time.time() - EXPIRE_DAYS * 3600 * 24
         delete_files = []
         for root, dirs, files in os.walk(self.root_path):
@@ -77,6 +111,9 @@ class BuildManager(Logging):
             create_times = dict()
             for f in files:
                 if not f.startswith('.'):
+                    build_number = f.split('-')[2]
+                    if build_number in rc_builds:
+                        continue
                     platform_pkg = '-'.join(f.split('-')[3:])
                     if not platform_pkg in create_times:
                         create_times[platform_pkg] = dict()
@@ -97,6 +134,6 @@ class BuildManager(Logging):
 
 
 if __name__ == '__main__':
-    manager = BuildManager('/tmp/splunk_builds/')
+    manager = BuildManager('/tmp/splunk_builds')
     # manager.download_latest_builds()
     manager.delete_expire_builds()
