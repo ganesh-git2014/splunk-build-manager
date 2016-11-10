@@ -45,7 +45,9 @@ class BuildManager(Logging):
         for tag in parsed_html.find_all('center'):
             if tag.string:
                 if tag.string.startswith('Branch: '):
-                    branch_list.append(tag.string.replace('Branch: ', ''))
+                    branch_name = tag.string.replace('Branch: ', '').strip()
+                    if branch_name:
+                        branch_list.append(branch_name)
         return self._filter_branches(branch_list)
 
     def _filter_branches(self, branch_list):

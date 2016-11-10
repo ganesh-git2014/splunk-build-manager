@@ -52,3 +52,4 @@ Just see `settings.py`.
 - Add a search bar in the web page (search the build in the site, if not exist get the corresponding url from http://releases.splunk.com)
 - Improve the download module (e.g. support waiting for connection if is disconnected)
 - Give links for release builds and reserve them longer then other builds
+- Need a DB to store some meta data about build (e.g. RC build label)
